@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WebMarket.Authorization;
 using WebMarket.Models;
 using WebMarket.Services;
 
@@ -20,6 +21,7 @@ namespace WebMarket.Controllers
             _dbContext = context;
             _getDbSet = getDbSet;
         }
+        [ServiceFilter(typeof(ApiAuthFilter))]
         [HttpGet]
         public virtual async Task<IActionResult> Index()
         {
@@ -35,7 +37,7 @@ namespace WebMarket.Controllers
                 return new NotFoundResult();
             return new OkObjectResult(entry);
         }
-
+        [ServiceFilter(typeof(ApiAuthFilter))]
         [HttpPost]
         public virtual async Task<IActionResult> Add([FromBody] T entity)
         {
@@ -48,6 +50,7 @@ namespace WebMarket.Controllers
             await _dbContext.SaveChangesAsync();
             return new CreatedAtActionResult(nameof(GetById), this.GetType().Name.Replace("Controller", ""), new { id = entity.Id }, entity);
         }
+        [ServiceFilter(typeof(ApiAuthFilter))]
         [HttpDelete("{id}")]
         public virtual async Task<IActionResult> Delete(int id)
         {

@@ -1,5 +1,6 @@
 
 using Microsoft.EntityFrameworkCore;
+using WebMarket.Authorization;
 using WebMarket.Models;
 using WebMarket.Services;
 
@@ -14,6 +15,8 @@ namespace WebMarket
             builder.Configuration.SetBasePath(Directory.GetCurrentDirectory());
             builder.Configuration.AddJsonFile("appsettings.json");
             builder.Configuration.AddEnvironmentVariables();
+
+            builder.Services.AddScoped<ApiAuthFilter>();
 
             // Configure Kestrel to use the configuration from appsettings.json
             builder.WebHost.ConfigureKestrel(options =>
