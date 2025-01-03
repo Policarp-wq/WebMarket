@@ -1,11 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using StackExchange.Redis;
 using WebMarket.Models;
 
 namespace WebMarket.Controllers
 {
-    public class SpecialController : MyController<Special>
+    public class SpecialController : CRUDController<Special>
     {
-        public SpecialController(MarketContext context) : base(context, con => con.Specials)
+        public SpecialController(MarketContext context, IConnectionMultiplexer multiplexer) : base(context, con => con.Specials, multiplexer)
         {
         }
     }

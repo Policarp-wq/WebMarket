@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace WebMarket.Models;
 
@@ -21,7 +19,12 @@ public partial class MarketContext : DbContext
 
     public virtual DbSet<Special> Specials { get; set; }
 
+    public virtual DbSet<Storage> Storages { get; set; }
+
+    public virtual DbSet<Transaction> Transactions { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Category>(entity =>
@@ -45,9 +48,6 @@ public partial class MarketContext : DbContext
             entity.ToTable("products");
 
             entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Amount)
-                .HasDefaultValue(0)
-                .HasColumnName("amount");
             entity.Property(e => e.CategoryId).HasColumnName("category_id");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("CURRENT_TIMESTAMP")
@@ -82,6 +82,50 @@ public partial class MarketContext : DbContext
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("specials_product_id_fkey");
+        });
+
+        modelBuilder.Entity<Storage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("storage_pkey");
+
+            entity.ToTable("storage");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Amount)
+                .HasDefaultValue(0)
+                .HasColumnName("amount");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.Storages)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("storage_product_id_fkey");
+        });
+
+        modelBuilder.Entity<Transaction>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("transactions_pkey");
+
+            entity.ToTable("transactions");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Amount).HasColumnName("amount");
+            entity.Property(e => e.Cost).HasColumnName("cost");
+            entity.Property(e => e.ProductId).HasColumnName("product_id");
+            entity.Property(e => e.TransactionDate)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("transaction_date");
+            entity.Property(e => e.UserId).HasColumnName("user_id");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.Transactions)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .HasConstraintName("transactions_product_id_fkey");
+
+            entity.HasOne(d => d.User).WithMany(p => p.Transactions)
+                .HasForeignKey(d => d.UserId)
+                .HasConstraintName("transactions_user_id_fkey");
         });
 
         modelBuilder.Entity<User>(entity =>

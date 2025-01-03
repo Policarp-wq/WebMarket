@@ -1,31 +1,29 @@
 ﻿namespace WebMarket.Services
 {
-    public class ConnectionString
+    public static class ConnectionString
     {
         //exmp "server=%DB_SERVER%;port=5432;database=market;uid=%DB_USER%;password=%DB_PASSWORD%"
-        private string _raw;
-        public ConnectionString(string? connectionStrigRaw)
-        {
-            connectionStrigRaw ??= string.Empty;
-            _raw = connectionStrigRaw;
-        }
-
-        private string GetEnvironmentVariable(string name)
+        private static string GetEnvironmentVariable(string name)
         {
             var res = Environment.GetEnvironmentVariable(name);
             return res == null ? string.Empty : res;
         }
 
-        private string ReplaceEnvVar(string where, string name)
+        private static string ReplaceEnvVar(string where, string name)
         {
             return where.Replace($"%{name}%", GetEnvironmentVariable(name));
         }
 
-        public string GetReplacedEnvVariables()
+        public static string GetReplacedEnvVariables(string? raw, string[] vars)
         {
-            var res = ReplaceEnvVar(_raw,"DB_SERVER");
-            res = ReplaceEnvVar(res, "DB_USER");
-            res = ReplaceEnvVar(res, "DB_PASSWORD");
+            if (raw == null)
+                return string.Empty;
+            if (vars.Length == 0) return raw;
+            var res = raw;
+            foreach (var var in vars)
+            {
+                res = ReplaceEnvVar(res, var);
+            }
             return res;
         }
     }

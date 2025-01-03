@@ -15,13 +15,13 @@ namespace WebMarket.Authorization
         public void OnAuthorization(AuthorizationFilterContext context)
         {
             return;
-            if (!context.HttpContext.Response.Headers.TryGetValue(AuthConstants.ApiHeader, out var extractedApiKey)) 
+            if (!context.HttpContext.Response.Headers.TryGetValue(AuthConstants.ApiHeader, out var extractedApiKey))
             {
                 context.Result = new UnauthorizedObjectResult("No api key header!");
                 return;
             }
             string? apiKey = _cofniguration.GetValue<string>(AuthConstants.ApiKeySectionName);
-            if(apiKey == null) 
+            if (apiKey == null)
                 return;
             if (!apiKey.Equals(extractedApiKey))
             {
@@ -29,7 +29,7 @@ namespace WebMarket.Authorization
                 return;
             }
 
-            
+
         }
     }
 }

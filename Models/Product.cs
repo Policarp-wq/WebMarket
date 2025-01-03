@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace WebMarket.Models;
+﻿namespace WebMarket.Models;
 
 public partial class Product : DbEntry
 {
@@ -12,8 +9,6 @@ public partial class Product : DbEntry
     public string? Description { get; set; }
 
     public int Price { get; set; }
-
-    public int? Amount { get; set; }
 
     public string? Image { get; set; }
 
@@ -26,4 +21,8 @@ public partial class Product : DbEntry
     public virtual Category? Category { get; set; }
 
     public virtual ICollection<Special> Specials { get; set; } = new List<Special>();
+
+    public virtual ICollection<Storage> Storages { get; set; } = new List<Storage>();
+
+    public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 }
