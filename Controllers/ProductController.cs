@@ -1,13 +1,33 @@
-﻿using StackExchange.Redis;
-using WebMarket.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using WebMarket.Contracts;
+using WebMarket.DataAccess.Models;
+using WebMarket.Services;
 
 namespace WebMarket.Controllers
 {
-    public class ProductController : CRUDController<Product>
+    public class ProductController : MyController<Product>
     {
-        public ProductController(MarketContext context, IConnectionMultiplexer multiplexer)
-            : base(context, con => con.Products, multiplexer)
+        private readonly ProductService _productService;
+        public ProductController(ProductService productService) : base(productService)
         {
+            _productService = productService;
+        }
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] ProductInfo productInfo)
+        {
+            if (productInfo == null)
+                return BadRequest("Body is null");
+            var res = await _productService.Create(new Product()
+            {
+                Name = productInfo.Name,
+                CategoryId = productInfo.CategoryId,
+                Price = productInfo.Price,
+                Description = productInfo.Description,
+                Image = productInfo.Image,
+                Rating = productInfo.Rating,
+
+            });
+            return CreatedAtAction(nameof(Create), res);
         }
     }
 }

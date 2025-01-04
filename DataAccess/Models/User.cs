@@ -1,4 +1,4 @@
-﻿namespace WebMarket.Models;
+﻿namespace WebMarket.DataAccess.Models;
 
 public partial class User : DbEntry
 {

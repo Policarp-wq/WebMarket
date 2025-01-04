@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace WebMarket.Models;
+namespace WebMarket.DataAccess.Models;
 
 public partial class MarketContext : DbContext
 {

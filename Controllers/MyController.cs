@@ -1,26 +1,41 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using StackExchange.Redis;
-using WebMarket.Models;
+using WebMarket.DataAccess.Models;
+using WebMarket.Services;
 
 namespace WebMarket.Controllers
 {
     [ApiController]
     [Route("api/[controller]/[action]")]
-    public abstract class MyController<T> where T : DbEntry
+    public abstract class MyController<T> : ControllerBase where T : DbEntry
     {
-        protected readonly MarketContext _dbContext;
-        private readonly Func<MarketContext, DbSet<T>> _getDbSet;
-        protected readonly IDatabase _redis;
-        //weird
-        protected DbSet<T> _dbSet => _getDbSet(_dbContext);
-
-        protected MyController(MarketContext context, Func<MarketContext, DbSet<T>> getDbSet, IConnectionMultiplexer multiplexer)
+        private readonly BaseService<T> _baseService;
+        protected MyController(BaseService<T> baseService)
         {
-            _dbContext = context;
-            _getDbSet = getDbSet;
-            _redis = multiplexer.GetDatabase();
+            _baseService = baseService;
         }
+        [HttpGet]
+        public virtual async Task<ActionResult> Index()
+        {
+            return new OkObjectResult(await _baseService.GetIndex());
+        }
+        [HttpGet("{id}")]
+        public virtual async Task<ActionResult> GetById(int id)
+        {
+            var res = await _baseService.GetById(id);
+            if (res == null)
+                return new NotFoundObjectResult($"Not found with id: {id}");
+            return new OkObjectResult(res);
+        }
+        [HttpDelete("{id}")]
+        public virtual async Task<ActionResult> DeleteById(int id)
+        {
+            var affected = await _baseService.DeleteById(id);
+            if (affected > 0)
+                return new OkObjectResult("Deleted");
+            return new NotFoundObjectResult($"Not found with id: {id}");
+        }
+
+
 
     }
 }

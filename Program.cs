@@ -3,9 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using StackExchange.Redis;
 using WebMarket.Authorization;
+using WebMarket.DataAccess.Models;
+using WebMarket.DataAccess.Repositories;
+using WebMarket.DataAccess.Repositories.Abstractions;
 using WebMarket.Middlewares;
-using WebMarket.Models;
 using WebMarket.Services;
+using WebMarket.SupportTools;
 
 namespace WebMarket
 {
@@ -25,10 +28,18 @@ namespace WebMarket
 
             builder.Services.AddScoped<ApiAuthFilter>();
 
+
+            builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+            builder.Services.AddScoped<IProductsRepository, ProductsRepository>();
+            builder.Services.AddScoped<ICategoriesRepository, CategoriesRepository>();
+
+            builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<ProductService>();
+            builder.Services.AddScoped<CategoryService>();
             // Configure Kestrel to use the configuration from appsettings.json
             builder.WebHost.ConfigureKestrel(options =>
             {
-                options.ListenAnyIP(int.Parse(Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS"))); // Слушать на всех сетевых интерфейсах
+                options.ListenAnyIP(int.Parse(Environment.GetEnvironmentVariable("ASPNETCORE_HTTP_PORTS")));
             });
 
             builder.Logging.AddConsole();
@@ -44,7 +55,6 @@ namespace WebMarket
             string dbConnection = ConnectionString
                 .GetReplacedEnvVariables(builder.Configuration.GetConnectionString("Database"),
                 ["DB_SERVER", "DB_USER", "DB_PASSWORD"]);
-            Console.WriteLine("sas " + dbConnection);
             builder.Services.AddDbContext<MarketContext>(opt =>
                 opt.UseNpgsql(dbConnection).LogTo(Console.WriteLine, new[] {
                         RelationalEventId.CommandError,
@@ -75,8 +85,8 @@ namespace WebMarket
 
             //if (app.Environment.IsDevelopment())
             //{
-                app.UseSwagger();
-                app.UseSwaggerUI();
+            app.UseSwagger();
+            app.UseSwaggerUI();
             //}
 
             //app.UseHttpsRedirection();

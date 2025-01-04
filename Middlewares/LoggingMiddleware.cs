@@ -1,5 +1,5 @@
 ﻿using WebMarket.Controllers;
-using WebMarket.Models;
+using WebMarket.DataAccess.Models;
 
 namespace WebMarket.Middlewares
 {
@@ -16,9 +16,9 @@ namespace WebMarket.Middlewares
 
         public async Task InvokeAsync(HttpContext context)
         {
-            _logger.LogInformation($"[{DateTime.UtcNow}]: Handling request {context.Request.Method} {context.Request.Path}");
+            _logger.LogInformation($"[{DateTime.UtcNow} UTC]: Handling request {context.Request.Method} {context.Request.Path}");
             await _next(context);
-            _logger.LogInformation($"[{DateTime.UtcNow}]: Responsed with code {context.Response.StatusCode}");
+            _logger.LogInformation($"[{DateTime.UtcNow} UTC]: Responsed with code {context.Response.StatusCode}");
         }
     }
 }

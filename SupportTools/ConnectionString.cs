@@ -1,4 +1,4 @@
-﻿namespace WebMarket.Services
+﻿namespace WebMarket.SupportTools
 {
     public static class ConnectionString
     {
