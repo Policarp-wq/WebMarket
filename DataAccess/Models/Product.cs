@@ -8,11 +8,11 @@ public partial class Product : DbEntry
 
     public string? Description { get; set; }
 
-    public int Price { get; set; }
+    public double Price { get; set; }
 
     public string? Image { get; set; }
 
-    public short? Rating { get; set; }
+    public double Rating { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
@@ -25,4 +25,5 @@ public partial class Product : DbEntry
     public virtual ICollection<Storage> Storages { get; set; } = new List<Storage>();
 
     public virtual ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
+    public virtual ICollection<ShoppingCartElement> ShoppingCartElements { get; set; } = new List<ShoppingCartElement>();
 }

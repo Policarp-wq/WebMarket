@@ -1,4 +1,4 @@
 ﻿namespace WebMarket.Contracts
 {
-    public record ProductInfo(string Name, string? Description, int Price, string? Image, short? Rating, int CategoryId);
+    public record ProductInfo(string Name, string? Description, double Price, string? Image, double Rating, int CategoryId);
 }

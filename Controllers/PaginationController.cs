@@ -6,7 +6,7 @@ using WebMarket.SupportTools;
 
 namespace WebMarket.Controllers
 {
-    [ApiController]
+    [ApiController] //to service
     [Route("api/[controller]/[action]")]
     public abstract class PaginationController<T> : ControllerBase where T : DbEntry
     {
@@ -14,8 +14,8 @@ namespace WebMarket.Controllers
         protected Dictionary<string, int> _offsets;
         protected readonly IDatabase _redis;
         protected readonly IPartitionRepository<T> _partitionRepository;
-        private const int _tokenLength = 32;
-        private const int _tokenTime = 60;
+        protected const int _tokenLength = 32;
+        protected const int _tokenTime = 60;
         protected PaginationController(IPartitionRepository<T> partitionRepository,
             IConnectionMultiplexer multiplexer)
         {
@@ -55,8 +55,8 @@ namespace WebMarket.Controllers
             return new ObjectResult(token);
         }
 
-        [HttpGet("{count}")]
-        public async Task<IActionResult> GetPage([FromHeader(Name = _paginationToken)] string? token, int count)
+        [HttpGet]
+        public async Task<IActionResult> GetPage([FromHeader(Name = _paginationToken)] string? token, [FromQuery] int count)
         {
             if (count <= 0)
                 return new ObjectResult(null);

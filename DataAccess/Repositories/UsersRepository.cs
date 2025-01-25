@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using WebMarket.Contracts;
 using WebMarket.DataAccess.Models;
 using WebMarket.DataAccess.Repositories.Abstractions;
 
@@ -35,6 +36,18 @@ namespace WebMarket.DataAccess.Repositories
                     .SetProperty(u => u.Email, u => email ?? u.Email)
                     .SetProperty(u => u.Address, u => address ?? u.Address));
             return affected > 0 ? id : -1;
+        }
+        //TODO: BAD OPTIMIZATION!
+        public async Task<List<ShoppingCartElementPresentation>> GetShoppingCartElements(int id)
+        {
+            var user = await _dbSet
+                .AsNoTracking()
+                .Include(u => u.ShoppingCartElements)
+                .ThenInclude(el => el.Product)
+                .SingleOrDefaultAsync(u => u.Id == id);
+            return user?.ShoppingCartElements?.Select(el =>
+            new ShoppingCartElementPresentation(el.Id, el.ProductId, el.Product.Name, el.ProductAmount,
+            el.Product.Price, el.Product.Image))?.ToList() ?? new List<ShoppingCartElementPresentation>();
         }
     }
 }

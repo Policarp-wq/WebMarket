@@ -1,12 +1,17 @@
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.IdentityModel.Tokens;
 using StackExchange.Redis;
+using System.Text;
 using WebMarket.Authorization;
+using WebMarket.Authorization.JWT;
 using WebMarket.DataAccess.Models;
 using WebMarket.DataAccess.Repositories;
 using WebMarket.DataAccess.Repositories.Abstractions;
 using WebMarket.Middlewares;
+using WebMarket.ServerExceptions;
 using WebMarket.Services;
 using WebMarket.SupportTools;
 
@@ -23,19 +28,27 @@ namespace WebMarket
             builder.Configuration.AddEnvironmentVariables();
 
             builder.Logging.ClearProviders();
-
             builder.Logging.AddConsole();
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
 
             builder.Services.AddScoped<ApiAuthFilter>();
-
 
             builder.Services.AddScoped<IUsersRepository, UsersRepository>();
             builder.Services.AddScoped<IProductsRepository, ProductsRepository>();
             builder.Services.AddScoped<ICategoriesRepository, CategoriesRepository>();
+            builder.Services.AddScoped<IShoppingCartElementsRepository, ShoppingCartElementsRepository>();
+            builder.Services.AddScoped<IReviewsRepository, ReviewsRepository>();
 
             builder.Services.AddScoped<UserService>();
             builder.Services.AddScoped<ProductService>();
             builder.Services.AddScoped<CategoryService>();
+            builder.Services.AddScoped<ShoppingCartService>();
+            builder.Services.AddScoped<ReviewService>();
+
+            builder.Services.Configure<JWTOptions>(builder.Configuration.GetSection(nameof(JWTOptions)));
+
+            builder.Services.AddScoped<JWTProvider>();
             // Configure Kestrel to use the configuration from appsettings.json
             builder.WebHost.ConfigureKestrel(options =>
             {
@@ -70,6 +83,33 @@ namespace WebMarket
                 .AddHealthChecks()
                 .AddDbContextCheck<MarketContext>("Database")
                 .AddRedis(redisConnection, name: "Redis");
+            string secretKey = builder.Configuration.GetSection(nameof(JWTOptions))["SecretKey"];
+            builder.Services.AddAuthentication(
+                JwtBearerDefaults.AuthenticationScheme
+                ).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opt =>
+                {
+                    opt.TokenValidationParameters = new()
+                    {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(secretKey)
+                            )
+                    };
+
+                    opt.Events = new JwtBearerEvents
+                    {
+                        OnMessageReceived = (context) =>
+                        {
+                            context.Token = context.Request.Cookies[JWTOptions.CookiesName];
+
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
+            builder.Services.AddAuthorization();
 
 
             builder.Services.AddControllers().AddNewtonsoftJson(opt =>
@@ -80,18 +120,20 @@ namespace WebMarket
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
-
+            app.UseExceptionHandler();
             app.UseMiddleware<LoggingMiddleware>();
 
-            //if (app.Environment.IsDevelopment())
-            //{
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            //}
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             //app.UseHttpsRedirection();
 
-            //app.UseAuthorization();
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             app.UseCors();
             app.Logger.LogInformation("Starting app ;)");
             app.MapHealthChecks("/healtz");

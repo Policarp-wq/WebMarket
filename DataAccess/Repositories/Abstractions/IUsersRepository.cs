@@ -1,4 +1,5 @@
-﻿using WebMarket.DataAccess.Models;
+﻿using WebMarket.Contracts;
+using WebMarket.DataAccess.Models;
 
 namespace WebMarket.DataAccess.Repositories.Abstractions
 {
@@ -6,5 +7,6 @@ namespace WebMarket.DataAccess.Repositories.Abstractions
     {
         Task<User?> GetUserByLogin(string login);
         Task<int> Update(int id, string? login, string? email, string? address);
+        Task<List<ShoppingCartElementPresentation>> GetShoppingCartElements(int id);
     }
 }

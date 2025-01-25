@@ -1,4 +1,4 @@
 ﻿namespace WebMarket.Contracts
 {
-    public record UserInfoPatch(int Id, string? Login, string? Email, string? Address);
+    public record UserInfoPatch(int UserId, string? Login, string? Email, string? Address);
 }

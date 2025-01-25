@@ -22,8 +22,10 @@ public partial class MarketContext : DbContext
     public virtual DbSet<Storage> Storages { get; set; }
 
     public virtual DbSet<Transaction> Transactions { get; set; }
+    public virtual DbSet<Review> Reviews { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<ShoppingCartElement> ShoppingCartElements { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,6 +69,8 @@ public partial class MarketContext : DbContext
                 .HasForeignKey(d => d.CategoryId)
                 .OnDelete(DeleteBehavior.SetNull)
                 .HasConstraintName("products_category_id_fkey");
+
+
         });
 
         modelBuilder.Entity<Special>(entity =>
@@ -152,6 +156,58 @@ public partial class MarketContext : DbContext
             entity.Property(e => e.Wallet)
                 .HasDefaultValueSql("0")
                 .HasColumnName("wallet");
+        });
+
+        modelBuilder.Entity<ShoppingCartElement>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("shopping_cart_elements_pkey");
+
+            entity.ToTable("shopping_cart_elements");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id");
+            entity.Property(e => e.ProductId)
+                .HasColumnName("product_id");
+            entity.Property(e => e.UserId)
+                .HasColumnName("user_id");
+            entity.Property(e => e.ProductAmount)
+                .HasColumnName("product_amount");
+
+            entity.HasOne(entity => entity.User)
+                .WithMany(u => u.ShoppingCartElements)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(entity => entity.Product)
+                .WithMany(p => p.ShoppingCartElements)
+                .HasForeignKey(e => e.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Review>(entity =>
+        {
+            entity.HasKey(entity => entity.Id).HasName("reviews_pkey");
+            entity.ToTable("reviews");
+
+            entity.Property(e => e.Id)
+                .HasColumnName("id");
+            entity.Property(e => e.ProductId)
+                .HasColumnName("product_id");
+            entity.Property(e => e.UserId)
+                .HasColumnName("user_id");
+            entity.Property(e => e.ReviewContent)
+                .HasColumnName("review_content");
+            entity.Property(e => e.SetRating)
+                .HasColumnName("set_rating");
+            entity.Property(e => e.CreatedAt)
+                .HasColumnName("created_at");
+
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("CURRENT_TIMESTAMP")
+                .HasColumnType("timestamp without time zone")
+                .HasColumnName("created_at");
+
+
         });
 
         OnModelCreatingPartial(modelBuilder);
